@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============ TASK FORM (Rich layout like preview) ============ -->
+    <record id="view_task_form" model="ir.ui.view">
+        <field name="name">jira_zain.task.form</field>
+        <field name="model">jira_zain.task</field>
+        <field name="arch" type="xml">
+            <form string="Task">
+                <header>
+                    <field name="stage_id" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-clock-o" disabled="1">
+                            <div class="o_stat_info">
+                                <field name="hours_spent" class="o_stat_value"/>
+                                <span class="o_stat_text"> / </span>
+                                <field name="hours_planned" class="o_stat_value"/>
+                                <span class="o_stat_text">Hours</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-file-text-o" disabled="1">
+                            <field string="Docs" name="document_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Overdue" bg_color="bg-danger"
+                            attrs="{'invisible': [('is_overdue', '=', False)]}"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Task Title..."/>
+                        </h1>
+                        <h3 class="text-muted">
+                            <field name="display_key" readonly="1"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group string="Details">
+                            <field name="project_id"/>
+                            <field name="task_type"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="reviewer_id" widget="many2one_avatar_user"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="sprint_id"/>
+                        </group>
+                        <group string="Schedule">
+                            <field name="date_start"/>
+                            <field name="date_deadline" decoration-danger="is_overdue"/>
+                            <field name="story_points"/>
+                            <field name="kanban_state" widget="state_selection"/>
+                            <field name="progress" widget="progressbar"/>
+                            <field name="is_overdue" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Describe the task..."/>
+                        </page>
+                        <page string="⏱ Time Logs" name="timesheets">
+                            <field name="timelog_ids">
+                                <tree editable="bottom">
+                                    <field name="date"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <field name="hours" sum="Total Hours"/>
+                                    <field name="description"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="📄 Documents" name="documents">
+                            <field name="document_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="doc_type"/>
+                                    <field name="space_id"/>
+                                    <field name="state"/>
+                                    <field name="author_id" widget="many2one_avatar_user"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============ TASK LIST (Rich columns) ============ -->
+    <record id="view_task_tree" model="ir.ui.view">
+        <field name="name">jira_zain.task.tree</field>
+        <field name="model">jira_zain.task</field>
+        <field name="arch" type="xml">
+            <tree string="Tasks" default_order="priority desc, sequence"
+                  decoration-danger="is_overdue"
+                  decoration-muted="is_closed == True">
+                <field name="is_overdue" invisible="1"/>
+                <field name="is_closed" invisible="1"/>
+                <field name="sequence" widget="handle"/>
+                <field name="display_key" string="Key"/>
+                <field name="name" string="Title"/>
+                <field name="project_id"/>
+                <field name="task_type" string="Type"/>
+                <field name="user_id" string="Assignee" widget="many2one_avatar_user"/>
+                <field name="priority" widget="priority"/>
+                <field name="story_points" string="SP" sum="Total SP"/>
+                <field name="stage_id"/>
+                <field name="sprint_id" optional="show"/>
+                <field name="date_deadline" string="Due"
+                       decoration-danger="is_overdue"/>
+                <field name="hours_spent" string="Hours" sum="Total Hours"/>
+                <field name="kanban_state" widget="state_selection"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ============ TASK KANBAN (Jira/Trello style) ============ -->
+    <record id="view_task_kanban" model="ir.ui.view">
+        <field name="name">jira_zain.task.kanban</field>
+        <field name="model">jira_zain.task</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" class="o_kanban_small_column"
+                    on_create="quick_create" quick_create_view="jira_zain.view_task_quick_create">
+                <field name="color"/>
+                <field name="priority"/>
+                <field name="stage_id"/>
+                <field name="user_id"/>
+                <field name="task_type"/>
+                <field name="story_points"/>
+                <field name="kanban_state"/>
+                <field name="date_deadline"/>
+                <field name="is_overdue"/>
+                <field name="tag_ids"/>
+                <field name="display_key"/>
+                <field name="project_id"/>
+                <progressbar field="kanban_state"
+                             colors='{"done": "success", "blocked": "danger", "normal": "muted"}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click #{!selection_mode ? kanban_color(record.color.raw_value) : ''}">
+                            <div class="oe_kanban_content">
+                                <!-- Top row: type badge + story points -->
+                                <div class="o_kanban_record_top mb-0">
+                                    <div class="o_kanban_record_headings">
+                                        <span class="badge text-bg-secondary me-1">
+                                            <t t-if="record.task_type.raw_value == 'bug'">🐛</t>
+                                            <t t-elif="record.task_type.raw_value == 'feature'">✨</t>
+                                            <t t-elif="record.task_type.raw_value == 'improvement'">📈</t>
+                                            <t t-else="">📋</t>
+                                            <field name="task_type"/>
+                                        </span>
+                                        <t t-if="record.story_points.raw_value">
+                                            <span class="badge text-bg-info">
+                                                <field name="story_points"/> SP
+                                            </span>
+                                        </t>
+                                    </div>
+                                    <div class="o_dropdown_kanban dropdown">
+                                        <a class="dropdown-toggle o-no-caret btn" data-bs-toggle="dropdown" href="#">
+                                            <span class="fa fa-ellipsis-v"/>
+                                        </a>
+                                        <div class="dropdown-menu" role="menu">
+                                            <a role="menuitem" type="edit" class="dropdown-item">Edit</a>
+                                            <a role="menuitem" type="delete" class="dropdown-item">Delete</a>
+                                            <div class="dropdown-divider"/>
+                                            <ul class="oe_kanban_colorpicker" data-field="color"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Body: Title -->
+                                <div class="o_kanban_record_body">
+                                    <strong><field name="name"/></strong>
+                                    <div class="text-muted small">
+                                        <field name="display_key"/>
+                                        <t t-if="record.project_id.value">
+                                            · <field name="project_id"/>
+                                        </t>
+                                    </div>
+                                    <div t-if="record.tag_ids.raw_value.length" class="mt-1">
+                                        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                    </div>
+                                </div>
+                                <!-- Footer: priority + deadline + assignee -->
+                                <div class="o_kanban_record_bottom mt-2">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="priority" widget="priority"/>
+                                        <t t-if="record.date_deadline.raw_value">
+                                            <span t-attf-class="badge ms-1 #{record.is_overdue.raw_value ? 'text-bg-danger' : 'text-bg-light'}">
+                                                <i class="fa fa-clock-o"/>
+                                                <field name="date_deadline"/>
+                                            </span>
+                                        </t>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <field name="kanban_state" widget="state_selection"/>
+                                        <field name="user_id" widget="many2one_avatar_user"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Quick Create Form -->
+    <record id="view_task_quick_create" model="ir.ui.view">
+        <field name="name">jira_zain.task.quick.create</field>
+        <field name="model">jira_zain.task</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="name" placeholder="Task title..."/>
+                    <field name="project_id"/>
+                    <field name="user_id" widget="many2one_avatar_user"/>
+                    <field name="task_type"/>
+                    <field name="story_points"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- Task Search -->
+    <record id="view_task_search" model="ir.ui.view">
+        <field name="name">jira_zain.task.search</field>
+        <field name="model">jira_zain.task</field>
+        <field name="arch" type="xml">
+            <search string="Search Tasks">
+                <field name="name" string="Task"/>
+                <field name="project_id"/>
+                <field name="user_id"/>
+                <field name="sprint_id"/>
+                <field name="tag_ids"/>
+                <filter string="My Tasks" name="my_tasks" domain="[('user_id', '=', uid)]"/>
+                <filter string="Unassigned" name="unassigned" domain="[('user_id', '=', False)]"/>
+                <filter string="Overdue" name="overdue" domain="[('date_deadline', '&lt;', context_today().strftime('%Y-%m-%d')), ('is_closed', '=', False)]"/>
+                <separator/>
+                <filter string="Bugs" name="bugs" domain="[('task_type', '=', 'bug')]"/>
+                <filter string="Features" name="features" domain="[('task_type', '=', 'feature')]"/>
+                <separator/>
+                <filter string="High Priority" name="high_priority" domain="[('priority', 'in', ['2', '3'])]"/>
+                <filter string="In Sprint" name="in_sprint" domain="[('sprint_id', '!=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Project" name="group_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Stage" name="group_stage" context="{'group_by': 'stage_id'}"/>
+                    <filter string="Assignee" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Sprint" name="group_sprint" context="{'group_by': 'sprint_id'}"/>
+                    <filter string="Type" name="group_type" context="{'group_by': 'task_type'}"/>
+                    <filter string="Priority" name="group_priority" context="{'group_by': 'priority'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Task Action -->
+    <record id="action_task" model="ir.actions.act_window">
+        <field name="name">Tasks</field>
+        <field name="res_model">jira_zain.task</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_task_search"/>
+        <field name="context">{'search_default_my_tasks': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first task
+            </p>
+            <p>Use the Kanban board to visualize your work.</p>
+        </field>
+    </record>
+
+</odoo>

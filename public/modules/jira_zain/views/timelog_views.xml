@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Timelog Tree View -->
+    <record id="view_timelog_tree" model="ir.ui.view">
+        <field name="name">jira_zain.timelog.tree</field>
+        <field name="model">jira_zain.timelog</field>
+        <field name="arch" type="xml">
+            <tree string="Time Logs" editable="top">
+                <field name="date"/>
+                <field name="project_id"/>
+                <field name="task_id" domain="[('project_id', '=', project_id)]"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="hours" sum="Total Hours"/>
+                <field name="description"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Timelog Search View -->
+    <record id="view_timelog_search" model="ir.ui.view">
+        <field name="name">jira_zain.timelog.search</field>
+        <field name="model">jira_zain.timelog</field>
+        <field name="arch" type="xml">
+            <search string="Search Time Logs">
+                <field name="task_id"/>
+                <field name="project_id"/>
+                <field name="user_id"/>
+                <filter string="My Time" name="my_time" domain="[('user_id', '=', uid)]"/>
+                <filter string="Today" name="today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Project" name="group_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Task" name="group_task" context="{'group_by': 'task_id'}"/>
+                    <filter string="User" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Timelog Action -->
+    <record id="action_timelog" model="ir.actions.act_window">
+        <field name="name">Time Logs</field>
+        <field name="res_model">jira_zain.timelog</field>
+        <field name="view_mode">tree</field>
+        <field name="search_view_id" ref="view_timelog_search"/>
+        <field name="context">{'search_default_my_time': 1}</field>
+    </record>
+
+</odoo>

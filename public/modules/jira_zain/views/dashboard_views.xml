@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============ TASK DASHBOARD - PIVOT ============ -->
+
+    <record id="view_task_pivot" model="ir.ui.view">
+        <field name="name">jira_zain.task.pivot</field>
+        <field name="model">jira_zain.task</field>
+        <field name="arch" type="xml">
+            <pivot string="Task Analysis">
+                <field name="project_id" type="row"/>
+                <field name="stage_id" type="col"/>
+                <field name="story_points" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ============ TASK DASHBOARD - GRAPH ============ -->
+
+    <record id="view_task_graph" model="ir.ui.view">
+        <field name="name">jira_zain.task.graph</field>
+        <field name="model">jira_zain.task</field>
+        <field name="arch" type="xml">
+            <graph string="Task Analysis" type="bar">
+                <field name="stage_id"/>
+                <field name="story_points" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ============ TASK BY TYPE GRAPH ============ -->
+
+    <record id="view_task_graph_type" model="ir.ui.view">
+        <field name="name">jira_zain.task.graph.type</field>
+        <field name="model">jira_zain.task</field>
+        <field name="arch" type="xml">
+            <graph string="Tasks by Type" type="pie">
+                <field name="task_type"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ============ TASKS BY ASSIGNEE GRAPH ============ -->
+
+    <record id="view_task_graph_user" model="ir.ui.view">
+        <field name="name">jira_zain.task.graph.user</field>
+        <field name="model">jira_zain.task</field>
+        <field name="arch" type="xml">
+            <graph string="Tasks by Assignee" type="bar">
+                <field name="user_id"/>
+                <field name="story_points" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ============ DASHBOARD ACTIONS ============ -->
+
+    <!-- Tasks by Stage -->
+    <record id="action_dashboard_tasks_by_stage" model="ir.actions.act_window">
+        <field name="name">Tasks by Stage</field>
+        <field name="res_model">jira_zain.task</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_id" ref="view_task_graph"/>
+    </record>
+
+    <!-- Tasks by Type -->
+    <record id="action_dashboard_tasks_by_type" model="ir.actions.act_window">
+        <field name="name">Tasks by Type</field>
+        <field name="res_model">jira_zain.task</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_id" ref="view_task_graph_type"/>
+    </record>
+
+    <!-- Tasks by Assignee -->
+    <record id="action_dashboard_tasks_by_user" model="ir.actions.act_window">
+        <field name="name">Workload by Assignee</field>
+        <field name="res_model">jira_zain.task</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_id" ref="view_task_graph_user"/>
+    </record>
+
+    <!-- Task Pivot Analysis -->
+    <record id="action_dashboard_pivot" model="ir.actions.act_window">
+        <field name="name">Task Analysis (Pivot)</field>
+        <field name="res_model">jira_zain.task</field>
+        <field name="view_mode">pivot,graph,tree</field>
+        <field name="view_id" ref="view_task_pivot"/>
+    </record>
+
+    <!-- ============ TIMELOG REPORTS ============ -->
+
+    <record id="view_timelog_pivot" model="ir.ui.view">
+        <field name="name">jira_zain.timelog.pivot</field>
+        <field name="model">jira_zain.timelog</field>
+        <field name="arch" type="xml">
+            <pivot string="Time Log Analysis">
+                <field name="user_id" type="row"/>
+                <field name="project_id" type="col"/>
+                <field name="hours" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_timelog_graph" model="ir.ui.view">
+        <field name="name">jira_zain.timelog.graph</field>
+        <field name="model">jira_zain.timelog</field>
+        <field name="arch" type="xml">
+            <graph string="Time Log Analysis" type="bar">
+                <field name="project_id"/>
+                <field name="hours" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_dashboard_timelog" model="ir.actions.act_window">
+        <field name="name">Time Analysis</field>
+        <field name="res_model">jira_zain.timelog</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_id" ref="view_timelog_graph"/>
+    </record>
+
+</odoo>

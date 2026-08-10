@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        
+        <!-- Module Category -->
+        <record id="module_category_jira_zain" model="ir.module.category">
+            <field name="name">Jira-Zain</field>
+            <field name="sequence">50</field>
+        </record>
+
+        <!-- Team Member Group - implied by base.group_user so ALL internal users get it -->
+        <record id="group_team_member" model="res.groups">
+            <field name="name">Team Member</field>
+            <field name="category_id" ref="module_category_jira_zain"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Can view and edit assigned tasks, log time.</field>
+        </record>
+
+        <!-- Project Manager Group -->
+        <record id="group_project_manager" model="res.groups">
+            <field name="name">Project Manager</field>
+            <field name="category_id" ref="module_category_jira_zain"/>
+            <field name="implied_ids" eval="[(4, ref('group_team_member'))]"/>
+            <field name="comment">Can manage projects and all tasks within.</field>
+        </record>
+
+        <!-- Scrum Master Group -->
+        <record id="group_scrum_master" model="res.groups">
+            <field name="name">Scrum Master</field>
+            <field name="category_id" ref="module_category_jira_zain"/>
+            <field name="implied_ids" eval="[(4, ref('group_project_manager'))]"/>
+            <field name="comment">Can manage sprints, stages, and team workflow.</field>
+        </record>
+
+        <!-- Product Owner Group -->
+        <record id="group_product_owner" model="res.groups">
+            <field name="name">Product Owner</field>
+            <field name="category_id" ref="module_category_jira_zain"/>
+            <field name="implied_ids" eval="[(4, ref('group_scrum_master'))]"/>
+            <field name="comment">Full access to all module features.</field>
+        </record>
+
+        <!-- Give Admin user Product Owner access -->
+        <record id="base.user_admin" model="res.users">
+            <field name="groups_id" eval="[(4, ref('group_product_owner'))]"/>
+        </record>
+
+    </data>
+</odoo>

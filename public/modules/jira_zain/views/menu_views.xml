@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============ CONFIG ACTIONS (must be before menus) ============ -->
+
+    <record id="action_stage" model="ir.actions.act_window">
+        <field name="name">Stages</field>
+        <field name="res_model">jira_zain.stage</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_tag" model="ir.actions.act_window">
+        <field name="name">Tags</field>
+        <field name="res_model">jira_zain.tag</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_stage_tree" model="ir.ui.view">
+        <field name="name">jira_zain.stage.tree</field>
+        <field name="model">jira_zain.stage</field>
+        <field name="arch" type="xml">
+            <tree string="Stages" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="fold"/>
+                <field name="is_closed"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_tag_tree" model="ir.ui.view">
+        <field name="name">jira_zain.tag.tree</field>
+        <field name="model">jira_zain.tag</field>
+        <field name="arch" type="xml">
+            <tree string="Tags" editable="bottom">
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ============ MENUS ============ -->
+
+    <!-- Root Menu -->
+    <menuitem id="menu_root" name="Jira-Zain" sequence="45" groups="base.group_user"/>
+
+    <!-- ======= BOARD SECTION ======= -->
+    <menuitem id="menu_main" name="Board" parent="menu_root" sequence="10"/>
+
+    <menuitem id="menu_project" name="Projects" parent="menu_main"
+              action="action_project" sequence="10"/>
+    <menuitem id="menu_task" name="Tasks" parent="menu_main"
+              action="action_task" sequence="20"/>
+    <menuitem id="menu_sprint" name="Sprints" parent="menu_main"
+              action="action_sprint" sequence="30"/>
+    <menuitem id="menu_timelog" name="Time Logs" parent="menu_main"
+              action="action_timelog" sequence="40"/>
+
+    <!-- ======= DOCUMENTATION SECTION ======= -->
+    <menuitem id="menu_docs" name="Documentation" parent="menu_root" sequence="20"/>
+
+    <menuitem id="menu_doc_spaces" name="Spaces" parent="menu_docs"
+              action="action_doc_space" sequence="10"/>
+    <menuitem id="menu_all_documents" name="All Documents" parent="menu_docs"
+              action="action_document" sequence="20"/>
+    <menuitem id="menu_my_documents" name="My Documents" parent="menu_docs"
+              action="action_my_documents" sequence="30"/>
+
+    <!-- ======= DASHBOARD SECTION ======= -->
+    <menuitem id="menu_dashboard" name="Dashboard" parent="menu_root" sequence="30"/>
+
+    <menuitem id="menu_dash_by_stage" name="Tasks by Stage" parent="menu_dashboard"
+              action="action_dashboard_tasks_by_stage" sequence="10"/>
+    <menuitem id="menu_dash_by_type" name="Tasks by Type" parent="menu_dashboard"
+              action="action_dashboard_tasks_by_type" sequence="20"/>
+    <menuitem id="menu_dash_by_user" name="Workload by Assignee" parent="menu_dashboard"
+              action="action_dashboard_tasks_by_user" sequence="30"/>
+    <menuitem id="menu_dash_pivot" name="Task Analysis" parent="menu_dashboard"
+              action="action_dashboard_pivot" sequence="40"/>
+    <menuitem id="menu_dash_timelog" name="Time Analysis" parent="menu_dashboard"
+              action="action_dashboard_timelog" sequence="50"/>
+
+    <!-- ======= CONFIGURATION SECTION ======= -->
+    <menuitem id="menu_config" name="Configuration" parent="menu_root"
+              sequence="100" groups="group_scrum_master"/>
+
+    <menuitem id="menu_config_stages" name="Stages" parent="menu_config"
+              action="action_stage" sequence="10"/>
+    <menuitem id="menu_config_tags" name="Tags" parent="menu_config"
+              action="action_tag" sequence="20"/>
+    <menuitem id="menu_config_labels" name="Document Labels" parent="menu_config"
+              action="action_doc_label" sequence="30"/>
+
+</odoo>

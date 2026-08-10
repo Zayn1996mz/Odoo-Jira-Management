@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============ SPRINT FORM (Rich like preview) ============ -->
+    <record id="view_sprint_form" model="ir.ui.view">
+        <field name="name">jira_zain.sprint.form</field>
+        <field name="model">jira_zain.sprint</field>
+        <field name="arch" type="xml">
+            <form string="Sprint">
+                <header>
+                    <button name="action_start" string="▶ Start Sprint" type="object"
+                            class="btn-primary"
+                            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <button name="action_complete" string="✅ Complete Sprint" type="object"
+                            class="btn-success"
+                            attrs="{'invisible': [('state', '!=', 'active')]}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-tasks"
+                                type="action" name="%(jira_zain.action_task)d"
+                                context="{'search_default_sprint_id': active_id}">
+                            <field string="Tasks" name="task_count" widget="statinfo"/>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-bar-chart" disabled="1">
+                            <div class="o_stat_info">
+                                <field name="story_points_done" class="o_stat_value"/>
+                                <span class="o_stat_text"> / </span>
+                                <field name="story_points_total" class="o_stat_value"/>
+                                <span class="o_stat_text">SP</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-tachometer" disabled="1"
+                                attrs="{'invisible': [('state', '!=', 'done')]}">
+                            <field string="Velocity" name="velocity" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Sprint Name..."/></h1>
+                    </div>
+                    <group>
+                        <group string="Sprint Details">
+                            <field name="project_id"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </group>
+                        <group string="Metrics">
+                            <field name="task_count" readonly="1"/>
+                            <field name="story_points_total" readonly="1"/>
+                            <field name="story_points_done" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="🎯 Sprint Goal">
+                        <field name="goal" nolabel="1"
+                               placeholder="What do we want to achieve in this sprint?"/>
+                    </group>
+                    <notebook>
+                        <page string="📋 Sprint Backlog" name="tasks">
+                            <field name="task_ids">
+                                <tree decoration-success="is_closed == True"
+                                      decoration-danger="kanban_state == 'blocked'">
+                                    <field name="is_closed" invisible="1"/>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="task_type"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <field name="priority" widget="priority"/>
+                                    <field name="story_points" sum="Total SP"/>
+                                    <field name="stage_id"/>
+                                    <field name="kanban_state" widget="state_selection"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Sprint Tree -->
+    <record id="view_sprint_tree" model="ir.ui.view">
+        <field name="name">jira_zain.sprint.tree</field>
+        <field name="model">jira_zain.sprint</field>
+        <field name="arch" type="xml">
+            <tree string="Sprints"
+                  decoration-info="state == 'active'"
+                  decoration-muted="state == 'done'">
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="state"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="task_count"/>
+                <field name="story_points_total" string="Total SP"/>
+                <field name="story_points_done" string="Done SP"/>
+                <field name="velocity"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Sprint Search -->
+    <record id="view_sprint_search" model="ir.ui.view">
+        <field name="name">jira_zain.sprint.search</field>
+        <field name="model">jira_zain.sprint</field>
+        <field name="arch" type="xml">
+            <search string="Search Sprints">
+                <field name="name"/>
+                <field name="project_id"/>
+                <filter string="Active" name="active_sprint" domain="[('state', '=', 'active')]"/>
+                <filter string="Planning" name="planning" domain="[('state', '=', 'draft')]"/>
+                <filter string="Completed" name="completed" domain="[('state', '=', 'done')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Project" name="group_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Sprint Action -->
+    <record id="action_sprint" model="ir.actions.act_window">
+        <field name="name">Sprints</field>
+        <field name="res_model">jira_zain.sprint</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_sprint_search"/>
+        <field name="context">{'search_default_active_sprint': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Plan your first sprint
+            </p>
+            <p>Create a sprint, add tasks, and track velocity.</p>
+        </field>
+    </record>
+
+</odoo>
